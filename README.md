@@ -1,1 +1,231 @@
-# ai-agent-ontology
+# カスタマーデジタルツイン（RDB版 vs オントロジー版）
+
+顧客の属性・趣味嗜好データをもとに、AI で顧客を再現する「カスタマーデジタルツイン」のサンプルです。
+同じ顧客データから **2種類のツイン** を作り、対話したり、アンケート回答の精度を比較したりできます。
+
+| ツイン | 顧客情報の渡し方 |
+| --- | --- |
+| **RDB版** | SQLite の顧客テーブル1行（年齢・趣味・ブランドなど）をそのままプロフィールとして LLM に渡す |
+| **オントロジー版** | Neo4j の知識グラフをたどり、「顧客 → キャンプ(趣味) → アウトドア志向(価値観)」のような **関係性と根拠** を LLM に渡す |
+
+LLM・指示文は両方同じで、違いは「顧客情報の表現方法」だけです。
+
+## 技術スタック
+
+| 役割 | 技術 |
+| --- | --- |
+| バックエンド | FastAPI（Python） |
+| フロントエンド | Vite + React + TypeScript + Tailwind CSS |
+| データベース | SQLite（顧客100人 + アンケート） |
+| オントロジー | Neo4j |
+| エージェント | LangChain（`langchain-anthropic`） |
+| AI モデル | Anthropic Claude（デフォルト `claude-opus-5-5`） |
+
+## 全体の流れ
+
+```
+create_sqlite.py ──▶ SQLite (customers.db) ──▶ ontology.py ──▶ Neo4j（知識グラフ）
+                          │                                       │
+                          ▼                                       ▼
+                     RDB版ツイン                            オントロジー版ツイン
+                          └──────────── twins.py (LangChain + Claude) ────────────┘
+                                              │
+                         main.py (FastAPI) ◀──┴──▶ evaluate.py（精度比較）
+                                │
+                         frontend (React)
+```
+
+## ディレクトリ構成
+
+```
+.
+├── README.md
+├── backend/
+│   ├── requirements.txt   # Python の依存パッケージ
+│   ├── .env.example       # 環境変数のサンプル（.env にコピーして使う）
+│   ├── knowledge.py       # ドメイン知識（趣味→価値観、ブランド→価値観などの概念の関係）とアンケート質問
+│   ├── create_sqlite.py   # サンプルデータ(顧客100人 + アンケート)を SQLite に作成
+│   ├── db.py              # SQLite からデータを取得する関数
+│   ├── ontology.py        # Neo4j へのグラフ登録・グラフ取得
+│   ├── twins.py           # 2種類のデジタルツイン（LangChain）
+│   ├── evaluate.py        # アンケート回答の精度比較スクリプト
+│   └── main.py            # FastAPI（API サーバー）
+└── frontend/
+    ├── index.html
+    ├── package.json
+    ├── vite.config.ts     # Tailwind の設定と、/api をバックエンドへ転送する設定
+    └── src/
+        ├── main.tsx
+        ├── index.css      # Tailwind の読み込み
+        ├── api.ts         # バックエンドとの通信・型定義
+        ├── App.tsx        # 画面全体（顧客選択・送信処理）
+        └── components/
+            ├── ProfileCard.tsx    # 顧客の趣味嗜好カード
+            ├── OntologyGraph.tsx  # Neo4j のグラフを SVG で描画
+            └── ChatPanel.tsx      # ツインとの会話表示
+```
+
+## データ設計
+
+### SQLite（RDB）
+
+**customers**（顧客 100 人）
+
+| カラム | 内容 | 例 |
+| --- | --- | --- |
+| customer_id | 顧客ID | 1 |
+| name / gender / age | 氏名 / 性別 / 年齢 | 佐藤 淳 / 男性 / 19 |
+| prefecture / city | 住所（都道府県 / 市区町村） | 新潟県 / 長岡市 |
+| occupation / annual_income | 職業 / 年収(万円) | 学生 / 31 |
+| household / has_children | 家族構成 / 子どもの有無 | 一人暮らし / 0 |
+| hobbies | 趣味（カンマ区切り） | ランニング,釣り |
+| personal_values | 価値観（カンマ区切り） | アウトドア志向 |
+| favorite_brands | 好きなブランド（カンマ区切り） | パタゴニア,スノーピーク |
+| shopping_channel | よく使う買い物チャネル | EC中心 |
+| monthly_spending | 月の消費額(円) | 10000 |
+
+**survey_questions**（アンケートの質問サマリ：10問）
+
+| カラム | 内容 |
+| --- | --- |
+| question_id | 質問ID |
+| category | 質問カテゴリ（購買行動、食生活 など） |
+| question_text | 質問文（例: 環境に配慮した商品を優先して買う） |
+
+**survey_answers**（アンケート回答：100人 × 10問 = 1,000件）
+
+| カラム | 内容 |
+| --- | --- |
+| answer_id | 回答ID |
+| customer_id | 顧客ID（customers を参照） |
+| question_id | 質問ID（survey_questions を参照） |
+| answer | 1=全くそう思わない 〜 5=とてもそう思う |
+
+> アンケート回答はダミーです。`create_sqlite.py` の `make_answer()` で、
+> 顧客の趣味・価値観・ブランド・居住エリアなどから「もっともらしい回答」を作り、少しだけランダムな揺らぎを加えています。
+
+### Neo4j（オントロジー）
+
+SQLite では「趣味 = キャンプ」という“値”でしかなかった情報を、**概念どうしの関係** としてグラフで表します。
+
+```
+(Customer) -[LIVES_IN]->      (City) -[LOCATED_IN]-> (Prefecture) -[PART_OF]-> (Region)
+                                                     (Prefecture) -[HAS_AREA_TYPE]-> (AreaType: 都市部/地方)
+(Customer) -[WORKS_AS]->      (Occupation)
+(Customer) -[IN_AGE_GROUP]->  (AgeGroup: 30代 など)
+(Customer) -[HAS_HOUSEHOLD]-> (Household)
+(Customer) -[SHOPS_VIA]->     (Channel)
+(Customer) -[ENJOYS]->        (Hobby) -[BELONGS_TO]-> (HobbyCategory)
+                              (Hobby) -[SUGGESTS]->   (Value)
+(Customer) -[LIKES]->         (Brand) -[IN_CATEGORY]-> (ProductCategory)
+                              (Brand) -[REFLECTS]->    (Value)
+(Customer) -[HOLDS]->         (Value)
+```
+
+オントロジー版ツインには、このグラフに加えて「価値観とその根拠」（例: `アウトドア志向（根拠3件）: 釣り(Hobby)がSUGGESTS, パタゴニア(Brand)がREFLECTS, 本人がHOLDS`）を渡します。
+
+## セットアップと起動手順
+
+### 0. 必要なもの
+
+- Python 3.11 以上
+- Node.js 20 以上
+- Docker（Neo4j の起動に使用）
+- Anthropic の API キー
+
+### 1. Neo4j を起動する（Docker）
+
+```bash
+docker run -d --name neo4j-twin \
+  -p 7474:7474 -p 7687:7687 \
+  -e NEO4J_AUTH=neo4j/password \
+  neo4j:5
+```
+
+起動後、ブラウザで http://localhost:7474 を開くと Neo4j Browser が使えます（ユーザー `neo4j` / パスワード `password`）。
+2回目以降は `docker start neo4j-twin` で起動できます。
+
+### 2. バックエンドの準備
+
+```bash
+cd backend
+
+# 仮想環境を作って依存パッケージをインストール
+python -m venv .venv
+source .venv/bin/activate        # Windows の場合: .venv\Scripts\activate
+pip install -r requirements.txt
+
+# 環境変数を設定（.env を開いて ANTHROPIC_API_KEY を書き換える）
+cp .env.example .env
+
+# サンプルデータを SQLite に作成 → customers.db ができる
+python create_sqlite.py
+
+# SQLite のデータを Neo4j にオントロジーとして登録
+python ontology.py
+
+# API サーバーを起動
+uvicorn main:app --reload
+```
+
+http://localhost:8000/docs を開くと API を試せます。
+
+| API | 内容 |
+| --- | --- |
+| `GET /api/customers` | 顧客一覧 |
+| `GET /api/customers/{id}` | 顧客の詳細（RDB データ）と Neo4j のグラフ |
+| `POST /api/chat` | ツインと対話（`twin_type` に `rdb` または `ontology` を指定） |
+
+### 3. フロントエンドの起動
+
+別のターミナルで実行します。
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+http://localhost:5173 を開きます。
+
+- 上部のプルダウンで顧客を選ぶと、左側に **趣味・価値観・好きなブランド** と **オントロジーのグラフ** が表示されます
+- 下の入力欄から質問を送ると、**RDB版とオントロジー版の両方のツインが同時に回答** するので、答え方の違いを比べられます
+
+### 4. 精度を比較する
+
+```bash
+cd backend
+python evaluate.py --limit 10     # 先頭10人で評価（100人全員なら --limit 100）
+```
+
+各ツインにアンケート（10問）へ回答させ、SQLite の実際の回答と比べて次の指標を出します。
+
+| 指標 | 意味 |
+| --- | --- |
+| 完全一致率 | 予測した回答が実際の回答とぴったり一致した割合（高いほど良い） |
+| ±1以内の一致率 | 予測と実際の差が1以内だった割合（高いほど良い） |
+| 平均絶対誤差(MAE) | 予測と実際の差の平均（低いほど良い） |
+
+> 1人あたり各ツイン1回ずつ API を呼び出します（`--limit 100` で計200回）。料金に注意してください。
+
+## オントロジーを Neo4j Browser で見る
+
+http://localhost:7474 で次の Cypher を実行すると、顧客1人の関係をグラフで確認できます。
+
+```cypher
+// 顧客ID=1 の人から3ホップ先までの関係
+MATCH p = (c:Customer {id: 1})-[*1..3]->()
+RETURN p
+```
+
+```cypher
+// 「アウトドア志向」につながる趣味・ブランドを持つ顧客
+MATCH (c:Customer)-[:ENJOYS|LIKES]->(x)-[:SUGGESTS|REFLECTS]->(:Value {name: "アウトドア志向"})
+RETURN c.name, collect(x.name) AS 根拠
+```
+
+## カスタマイズのヒント
+
+- **モデルの変更**: `.env` の `ANTHROPIC_MODEL` を変更（例: `claude-sonnet-5-5` にすると安く速くなる）
+- **概念の関係を増やす**: `knowledge.py` の `HOBBIES` / `BRANDS` を編集し、`python create_sqlite.py && python ontology.py` を再実行
+- **質問を増やす**: `knowledge.py` の `SURVEY_QUESTIONS` に追加し、同様に再実行

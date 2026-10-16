@@ -1,0 +1,6 @@
+fastapi
+uvicorn
+langchain-anthropic>=1.7
+neo4j
+python-dotenv
+faker
