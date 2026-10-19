@@ -13,8 +13,7 @@ from dotenv import load_dotenv
 from langchain_anthropic import ChatAnthropic
 from pydantic import BaseModel, Field
 
-import db
-import ontology
+from services import db, ontology
 
 load_dotenv()
 llm = ChatAnthropic(model=os.getenv("ANTHROPIC_MODEL", "claude-opus-5-5"), max_tokens=16000)

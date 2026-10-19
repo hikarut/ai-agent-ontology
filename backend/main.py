@@ -9,9 +9,7 @@ from typing import Literal
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
-import db
-import ontology
-import twins
+from services import db, ontology, twins
 
 app = FastAPI(title="Customer Digital Twin API")
 

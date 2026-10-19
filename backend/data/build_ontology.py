@@ -1,6 +1,6 @@
-"""Neo4j でオントロジー（知識グラフ）を構築・参照する。
+"""SQLite の顧客データを Neo4j にオントロジー（知識グラフ）として登録するスクリプト。
 
-実行: python ontology.py  → SQLite の顧客データを Neo4j にグラフとして登録します
+実行: python -m data.build_ontology   （backend/ ディレクトリで実行）
 
 グラフの構造（ノード -[リレーション]-> ノード）:
     (Customer) -[LIVES_IN]->        (City) -[LOCATED_IN]-> (Prefecture) -[PART_OF]-> (Region)
@@ -16,25 +16,9 @@
     (Customer) -[HOLDS]->           (Value)
 """
 
-import os
-
-from dotenv import load_dotenv
-from neo4j import GraphDatabase
-
-import db
-from knowledge import BRANDS, HOBBIES, PREFECTURES
-
-load_dotenv()
-driver = GraphDatabase.driver(
-    os.getenv("NEO4J_URI", "bolt://localhost:7687"),
-    auth=(os.getenv("NEO4J_USER", "neo4j"), os.getenv("NEO4J_PASSWORD", "password")),
-)
-
-
-def run(cypher: str, **params) -> list[dict]:
-    """Cypher（Neo4j のクエリ言語）を実行して結果を辞書のリストで返す"""
-    records, _, _ = driver.execute_query(cypher, params)
-    return [r.data() for r in records]
+from data.knowledge import BRANDS, HOBBIES, PREFECTURES
+from services import db
+from services.ontology import driver, run
 
 
 def build():
@@ -100,26 +84,6 @@ def build():
             values=c["personal_values"].split(","),
         )
     print("Neo4j にオントロジーを登録しました")
-
-
-def get_customer_graph(customer_id: int) -> dict:
-    """顧客を起点に3ホップ先までのグラフ（ノードとエッジ）を取得する"""
-    rows = run("""
-        MATCH (c:Customer {id: $id})-[rels*1..3]->()
-        UNWIND rels AS r
-        WITH DISTINCT r
-        RETURN startNode(r) AS s, labels(startNode(r))[0] AS s_label,
-               type(r) AS rel,
-               endNode(r) AS e, labels(endNode(r))[0] AS e_label
-    """, id=customer_id)
-
-    nodes, edges = {}, []
-    for row in rows:
-        s_id, e_id = f"{row['s_label']}:{row['s']['name']}", f"{row['e_label']}:{row['e']['name']}"
-        nodes[s_id] = {**row["s"], "id": s_id, "label": row["s_label"]}  # ノードのプロパティ + id/label
-        nodes[e_id] = {**row["e"], "id": e_id, "label": row["e_label"]}
-        edges.append({"source": s_id, "target": e_id, "type": row["rel"]})
-    return {"nodes": list(nodes.values()), "edges": edges}
 
 
 if __name__ == "__main__":

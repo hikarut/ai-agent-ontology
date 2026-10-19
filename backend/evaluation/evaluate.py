@@ -1,13 +1,12 @@
 """2種類のデジタルツインの精度を比較するスクリプト。
 
 各ツインにアンケートへ回答させ、SQLite に入っている実際の回答と比べます。
-実行: python evaluate.py --limit 10   （--limit で評価する顧客数を指定。最大100）
+実行: python -m evaluation.evaluate --limit 10   （backend/ で実行。--limit で評価する顧客数を指定。最大100）
 """
 
 import argparse
 
-import db
-import twins
+from services import db, twins
 
 
 def evaluate(twin_type: str, customer_ids: list[int], questions: list[dict]) -> dict:

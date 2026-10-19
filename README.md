@@ -23,16 +23,25 @@ LLM・指示文は両方同じで、違いは「顧客情報の表現方法」�
 
 ## 全体の流れ
 
+バックエンドは、役割ごとに3つのフォルダに分かれています。
+
+| フォルダ | 役割 | いつ使うか |
+| --- | --- | --- |
+| `data/` | サンプルデータを作り、SQLite と Neo4j に登録する | 最初に1回（データを作り直す時も） |
+| `services/` | データの取得とデジタルツイン本体。API と精度評価の両方から使う | API の起動中ずっと |
+| `evaluation/` | 2種類のツインの精度を比較する | 精度を確かめたい時 |
+
 ```
-create_sqlite.py ──▶ SQLite (customers.db) ──▶ ontology.py ──▶ Neo4j（知識グラフ）
-                          │                                       │
-                          ▼                                       ▼
-                     RDB版ツイン                            オントロジー版ツイン
-                          └──────────── twins.py (LangChain + Claude) ────────────┘
-                                              │
-                         main.py (FastAPI) ◀──┴──▶ evaluate.py（精度比較）
-                                │
-                         frontend (React)
+【1. データ準備】 data/
+  create_sqlite.py ──▶ SQLite (data/customers.db) ──▶ build_ontology.py ──▶ Neo4j（知識グラフ）
+
+【2. デジタルツイン】 services/
+  db.py（SQLite を読む）      ──▶ twins.py の RDB版ツイン          （LangChain + Claude）
+  ontology.py（Neo4j を読む） ──▶ twins.py のオントロジー版ツイン  （LangChain + Claude）
+
+【3. 利用】
+  main.py (FastAPI) ──▶ frontend (React)     … 画面からツインと対話
+  evaluation/evaluate.py                     … アンケート回答の精度を比較
 ```
 
 ## ディレクトリ構成
@@ -41,15 +50,20 @@ create_sqlite.py ──▶ SQLite (customers.db) ──▶ ontology.py ──▶
 .
 ├── README.md
 ├── backend/
-│   ├── requirements.txt   # Python の依存パッケージ
-│   ├── .env.example       # 環境変数のサンプル（.env にコピーして使う）
-│   ├── knowledge.py       # ドメイン知識（趣味→価値観、ブランド→価値観などの概念の関係）とアンケート質問
-│   ├── create_sqlite.py   # サンプルデータ(顧客100人 + アンケート)を SQLite に作成
-│   ├── db.py              # SQLite からデータを取得する関数
-│   ├── ontology.py        # Neo4j へのグラフ登録・グラフ取得
-│   ├── twins.py           # 2種類のデジタルツイン（LangChain）
-│   ├── evaluate.py        # アンケート回答の精度比較スクリプト
-│   └── main.py            # FastAPI（API サーバー）
+│   ├── main.py                # FastAPI（API サーバー）のエントリーポイント
+│   ├── requirements.txt       # Python の依存パッケージ
+│   ├── .env.example           # 環境変数のサンプル（.env にコピーして使う）
+│   ├── data/                  # 1. データ準備
+│   │   ├── knowledge.py       #   ドメイン知識（趣味→価値観、ブランド→価値観などの概念の関係）とアンケート質問
+│   │   ├── create_sqlite.py   #   サンプルデータ(顧客100人 + アンケート)を SQLite に作成
+│   │   ├── build_ontology.py  #   SQLite のデータを Neo4j にグラフとして登録
+│   │   └── customers.db       #   create_sqlite.py で作られる SQLite のファイル（git 管理外）
+│   ├── services/              # 2. API と精度評価から使う処理
+│   │   ├── db.py              #   SQLite からデータを取得する関数
+│   │   ├── ontology.py        #   Neo4j からグラフを取得する関数
+│   │   └── twins.py           #   2種類のデジタルツイン（LangChain）
+│   └── evaluation/            # 3. 精度検証
+│       └── evaluate.py        #   アンケート回答の精度比較スクリプト
 └── frontend/
     ├── index.html
     ├── package.json
@@ -101,7 +115,7 @@ create_sqlite.py ──▶ SQLite (customers.db) ──▶ ontology.py ──▶
 | question_id | 質問ID（survey_questions を参照） |
 | answer | 1=全くそう思わない 〜 5=とてもそう思う |
 
-> アンケート回答はダミーです。`create_sqlite.py` の `make_answer()` で、
+> アンケート回答はダミーです。`data/create_sqlite.py` の `make_answer()` で、
 > 顧客の趣味・価値観・ブランド・居住エリアなどから「もっともらしい回答」を作り、少しだけランダムな揺らぎを加えています。
 
 ### Neo4j（オントロジー）
@@ -158,15 +172,22 @@ pip install -r requirements.txt
 # 環境変数を設定（.env を開いて ANTHROPIC_API_KEY を書き換える）
 cp .env.example .env
 
-# サンプルデータを SQLite に作成 → customers.db ができる
-python create_sqlite.py
+# サンプルデータを SQLite に作成 → data/customers.db ができる
+python -m data.create_sqlite
 
 # SQLite のデータを Neo4j にオントロジーとして登録
-python ontology.py
+python -m data.build_ontology
 
 # API サーバーを起動
 uvicorn main:app --reload
+
+# 必要なパッケージがインストール済みの場合は以下コマンドだけで起動
+source .venv/bin/activate && uvicorn main:app --reload
 ```
+
+> Python のコマンドは、すべて `backend/` ディレクトリで実行します。
+> `python -m data.create_sqlite` は「`data/create_sqlite.py` を実行する」という意味です。
+> `-m` を付けて実行すると、`data/` や `services/` のファイルどうしを `from services import db` のように読み込めます。
 
 http://localhost:8000/docs を開くと API を試せます。
 
@@ -195,7 +216,7 @@ http://localhost:5173 を開きます。
 
 ```bash
 cd backend
-python evaluate.py --limit 10     # 先頭10人で評価（100人全員なら --limit 100）
+python -m evaluation.evaluate --limit 10     # 先頭10人で評価（100人全員なら --limit 100）
 ```
 
 各ツインにアンケート（10問）へ回答させ、SQLite の実際の回答と比べて次の指標を出します。
@@ -227,5 +248,5 @@ RETURN c.name, collect(x.name) AS 根拠
 ## カスタマイズのヒント
 
 - **モデルの変更**: `.env` の `ANTHROPIC_MODEL` を変更（例: `claude-sonnet-5-5` にすると安く速くなる）
-- **概念の関係を増やす**: `knowledge.py` の `HOBBIES` / `BRANDS` を編集し、`python create_sqlite.py && python ontology.py` を再実行
-- **質問を増やす**: `knowledge.py` の `SURVEY_QUESTIONS` に追加し、同様に再実行
+- **概念の関係を増やす**: `data/knowledge.py` の `HOBBIES` / `BRANDS` を編集し、`python -m data.create_sqlite && python -m data.build_ontology` を再実行
+- **質問を増やす**: `data/knowledge.py` の `SURVEY_QUESTIONS` に追加し、同様に再実行

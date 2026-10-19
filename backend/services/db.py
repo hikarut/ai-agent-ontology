@@ -3,7 +3,8 @@
 import sqlite3
 from pathlib import Path
 
-DB_PATH = Path(__file__).parent / "customers.db"
+# SQLite のファイルは data/create_sqlite.py で作成される
+DB_PATH = Path(__file__).parent.parent / "data" / "customers.db"
 
 
 def query(sql: str, params: tuple = ()) -> list[dict]:

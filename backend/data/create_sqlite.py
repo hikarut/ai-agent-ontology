@@ -1,6 +1,6 @@
 """サンプルデータ（顧客100人 + アンケート）を SQLite に作成するスクリプト。
 
-実行: python create_sqlite.py  → backend/customers.db が作られます
+実行: python -m data.create_sqlite   （backend/ ディレクトリで実行）→ backend/data/customers.db が作られます
 """
 
 import random
@@ -9,9 +9,9 @@ from collections import Counter
 
 from faker import Faker
 
-from knowledge import BRANDS, HOBBIES, PREFECTURES, SURVEY_QUESTIONS, VALUES
+from data.knowledge import BRANDS, HOBBIES, PREFECTURES, SURVEY_QUESTIONS, VALUES
+from services.db import DB_PATH
 
-DB_PATH = "customers.db"
 NUM_CUSTOMERS = 100
 
 random.seed(42)  # 毎回同じデータになるよう乱数を固定
@@ -168,7 +168,7 @@ def main():
     )
     conn.commit()
     conn.close()
-    print(f"{DB_PATH} を作成しました（顧客 {NUM_CUSTOMERS} 人 / 質問 {len(SURVEY_QUESTIONS)} 問）")
+    print(f"{DB_PATH.name} を作成しました（顧客 {NUM_CUSTOMERS} 人 / 質問 {len(SURVEY_QUESTIONS)} 問）")
 
 
 if __name__ == "__main__":
