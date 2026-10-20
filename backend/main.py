@@ -5,8 +5,10 @@ API ドキュメント: http://localhost:8000/docs
 """
 
 from typing import Literal
+
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
+
 from services import db, ontology, twins
 
 app = FastAPI(title="Customer Digital Twin API")
