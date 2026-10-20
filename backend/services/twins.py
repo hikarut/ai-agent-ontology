@@ -8,11 +8,9 @@
 
 import os
 from collections import defaultdict
-
 from dotenv import load_dotenv
 from langchain_anthropic import ChatAnthropic
 from pydantic import BaseModel, Field
-
 from services import db, ontology
 
 load_dotenv()

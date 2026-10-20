@@ -7,9 +7,7 @@ import random
 import sqlite3
 from collections import Counter
 from pathlib import Path
-
 from faker import Faker
-
 from data.common.knowledge import BRANDS, HOBBIES, PREFECTURES, SURVEY_QUESTIONS, VALUES
 from services.db import DB_PATH
 

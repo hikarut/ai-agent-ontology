@@ -5,7 +5,6 @@
 """
 
 import argparse
-
 from services import db, twins
 
 def evaluate(twin_type: str, customer_ids: list[int], questions: list[dict]) -> dict:
