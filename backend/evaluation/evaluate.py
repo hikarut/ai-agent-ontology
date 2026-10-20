@@ -8,7 +8,6 @@ import argparse
 
 from services import db, twins
 
-
 def evaluate(twin_type: str, customer_ids: list[int], questions: list[dict]) -> dict:
     predictions = twins.answer_surveys(customer_ids, twin_type, questions)
     errors = []  # |予測 - 実際| のリスト
@@ -20,7 +19,6 @@ def evaluate(twin_type: str, customer_ids: list[int], questions: list[dict]) -> 
         "±1以内の一致率": sum(e <= 1 for e in errors) / len(errors),
         "平均絶対誤差(MAE)": sum(errors) / len(errors),
     }
-
 
 def main():
     parser = argparse.ArgumentParser()
@@ -37,7 +35,6 @@ def main():
     for metric in results["rdb"]:
         print(f"{metric:<16}{results['rdb'][metric]:>10.3f}{results['ontology'][metric]:>14.3f}")
     print("\n※ 一致率は高いほど、MAE は低いほど精度が良い")
-
 
 if __name__ == "__main__":
     main()

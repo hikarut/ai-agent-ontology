@@ -34,12 +34,10 @@ COLUMN_LABELS = {
     "shopping_channel": "よく使う買い物チャネル", "monthly_spending": "月の消費額(円)",
 }
 
-
 def rdb_profile(customer_id: int) -> str:
     """RDB 版: 顧客テーブルの1行を「項目: 値」のテキストにする"""
     customer = db.get_customer(customer_id)
     return "\n".join(f"- {label}: {customer[col]}" for col, label in COLUMN_LABELS.items())
-
 
 def ontology_profile(customer_id: int) -> str:
     """オントロジー版: グラフの関係（トリプル）と、価値観に至る根拠をテキストにする"""
@@ -65,17 +63,14 @@ def ontology_profile(customer_id: int) -> str:
         lines.append(f"- {value}（根拠{len(reasons)}件）: {', '.join(reasons)}")
     return "\n".join(lines)
 
-
 def system_prompt(customer_id: int, twin_type: str) -> str:
     profile = rdb_profile(customer_id) if twin_type == "rdb" else ontology_profile(customer_id)
     return SYSTEM_PROMPT.format(profile=profile)
-
 
 def chat(customer_id: int, twin_type: str, messages: list[dict]) -> str:
     """会話履歴 messages（[{"role": "user"|"assistant", "content": "..."}]）に続けて返答する"""
     response = llm.invoke([{"role": "system", "content": system_prompt(customer_id, twin_type)}, *messages])
     return response.text
-
 
 # ---- アンケート回答（精度評価用） ----
 
@@ -83,13 +78,10 @@ class Answer(BaseModel):
     question_id: int
     answer: int = Field(description="1=全くそう思わない, 2=あまりそう思わない, 3=どちらともいえない, 4=ややそう思う, 5=とてもそう思う")
 
-
 class SurveyResult(BaseModel):
     answers: list[Answer]
 
-
 survey_llm = llm.with_structured_output(SurveyResult, method="json_schema")
-
 
 def survey_input(customer_id: int, twin_type: str, questions: list[dict]) -> list[dict]:
     """アンケートに回答させるための入力メッセージを作る"""
@@ -100,7 +92,6 @@ def survey_input(customer_id: int, twin_type: str, questions: list[dict]) -> lis
                                     "(1=全くそう思わない, 2=あまりそう思わない, 3=どちらともいえない, 4=ややそう思う, 5=とてもそう思う)\n\n"
                                     + question_text},
     ]
-
 
 def answer_surveys(customer_ids: list[int], twin_type: str, questions: list[dict]) -> list[dict[int, int]]:
     """複数の顧客にまとめてアンケート回答させる（並列実行）。顧客ごとに {question_id: answer} を返す"""

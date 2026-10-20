@@ -20,7 +20,6 @@ random.seed(42)  # 毎回同じデータになるよう乱数を固定
 fake = Faker("ja_JP")
 Faker.seed(42)
 
-
 def make_customer(customer_id: int) -> dict:
     """顧客1人分のダミーデータを作る"""
     gender = random.choice(["男性", "女性"])
@@ -90,7 +89,6 @@ def make_customer(customer_id: int) -> dict:
         "monthly_spending": max(10000, income * 60 + random.randint(-20000, 20000)),
     }
 
-
 def make_answer(customer: dict, question: dict) -> int:
     """顧客の特徴から、もっともらしいアンケート回答(1〜5)を作る（= 精度評価用の“正解データ”）"""
     hobbies = customer["hobbies"].split(",")
@@ -115,7 +113,6 @@ def make_answer(customer: dict, question: dict) -> int:
     answer = round(2 + score + random.gauss(0, 0.5))  # 少しだけランダムな揺らぎを入れる
     return min(5, max(1, answer))
 
-
 def main():
     conn = sqlite3.connect(DB_PATH)
     conn.executescript(SCHEMA_PATH.read_text(encoding="utf-8"))  # テーブルを作り直す
@@ -134,7 +131,6 @@ def main():
     conn.commit()
     conn.close()
     print(f"{DB_PATH.name} を作成しました（顧客 {NUM_CUSTOMERS} 人 / 質問 {len(SURVEY_QUESTIONS)} 問）")
-
 
 if __name__ == "__main__":
     main()

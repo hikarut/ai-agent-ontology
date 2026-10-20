@@ -20,7 +20,6 @@ from data.common.knowledge import BRANDS, HOBBIES, PREFECTURES
 from services import db
 from services.ontology import driver, run
 
-
 def build():
     """SQLite のデータから Neo4j にグラフを作る"""
     run("MATCH (n) DETACH DELETE n")  # 既存データを削除して作り直す
@@ -84,7 +83,6 @@ def build():
             values=c["personal_values"].split(","),
         )
     print("Neo4j にオントロジーを登録しました")
-
 
 if __name__ == "__main__":
     build()
