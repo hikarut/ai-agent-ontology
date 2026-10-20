@@ -54,12 +54,13 @@ LLM・指示文は両方同じで、違いは「顧客情報の表現方法」�
 │   ├── requirements.txt       # Python の依存パッケージ
 │   ├── .env.example           # 環境変数のサンプル（.env にコピーして使う）
 │   ├── data/                  # 1. データ準備
+│   │   ├── schema.sql         #   SQLite のテーブル定義（テーブル構成の正式な定義）
 │   │   ├── knowledge.py       #   ドメイン知識（趣味→価値観、ブランド→価値観などの概念の関係）とアンケート質問
 │   │   ├── create_sqlite.py   #   サンプルデータ(顧客100人 + アンケート)を SQLite に作成
 │   │   ├── build_ontology.py  #   SQLite のデータを Neo4j にグラフとして登録
 │   │   └── customers.db       #   create_sqlite.py で作られる SQLite のファイル（git 管理外）
 │   ├── services/              # 2. API と精度評価から使う処理
-│   │   ├── db.py              #   SQLite からデータを取得する関数
+│   │   ├── db.py              #   SQLite からデータを取得する関数（取得結果の型も定義）
 │   │   ├── ontology.py        #   Neo4j からグラフを取得する関数
 │   │   └── twins.py           #   2種類のデジタルツイン（LangChain）
 │   └── evaluation/            # 3. 精度検証
@@ -82,6 +83,10 @@ LLM・指示文は両方同じで、違いは「顧客情報の表現方法」�
 ## データ設計
 
 ### SQLite（RDB）
+
+テーブルの正式な定義は [`backend/data/schema.sql`](backend/data/schema.sql) です。
+Python で取得したときのデータの形（カラム名と型）は、[`backend/services/db.py`](backend/services/db.py) の `Customer` / `Question` 型で確認できます。
+テーブルを変更するときは、この2つのファイルを合わせて直してください。以下の表は、各カラムの意味と例の説明です。
 
 **customers**（顧客 100 人）
 

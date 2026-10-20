@@ -4,7 +4,6 @@
 """
 
 import os
-
 from dotenv import load_dotenv
 from neo4j import GraphDatabase
 
@@ -14,12 +13,10 @@ driver = GraphDatabase.driver(
     auth=(os.getenv("NEO4J_USER", "neo4j"), os.getenv("NEO4J_PASSWORD", "password")),
 )
 
-
 def run(cypher: str, **params) -> list[dict]:
     """Cypher（Neo4j のクエリ言語）を実行して結果を辞書のリストで返す"""
     records, _, _ = driver.execute_query(cypher, params)
     return [r.data() for r in records]
-
 
 def get_customer_graph(customer_id: int) -> dict:
     """顧客を起点に3ホップ先までのグラフ（ノードとエッジ）を取得する"""

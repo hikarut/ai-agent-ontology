@@ -6,12 +6,14 @@
 import random
 import sqlite3
 from collections import Counter
+from pathlib import Path
 
 from faker import Faker
 
 from data.knowledge import BRANDS, HOBBIES, PREFECTURES, SURVEY_QUESTIONS, VALUES
 from services.db import DB_PATH
 
+SCHEMA_PATH = Path(__file__).parent / "schema.sql"  # テーブル定義
 NUM_CUSTOMERS = 100
 
 random.seed(42)  # 毎回同じデータになるよう乱数を固定
@@ -116,44 +118,7 @@ def make_answer(customer: dict, question: dict) -> int:
 
 def main():
     conn = sqlite3.connect(DB_PATH)
-    conn.executescript("""
-        DROP TABLE IF EXISTS survey_answers;
-        DROP TABLE IF EXISTS survey_questions;
-        DROP TABLE IF EXISTS customers;
-
-        CREATE TABLE customers (
-            customer_id      INTEGER PRIMARY KEY,
-            name             TEXT,    -- 氏名
-            gender           TEXT,    -- 性別
-            age              INTEGER, -- 年齢
-            prefecture       TEXT,    -- 都道府県
-            city             TEXT,    -- 市区町村
-            occupation       TEXT,    -- 職業
-            annual_income    INTEGER, -- 年収(万円)
-            household        TEXT,    -- 家族構成
-            has_children     INTEGER, -- 子どもの有無(1/0)
-            hobbies          TEXT,    -- 趣味(カンマ区切り)
-            personal_values  TEXT,    -- 価値観(カンマ区切り)
-            favorite_brands  TEXT,    -- 好きなブランド(カンマ区切り)
-            shopping_channel TEXT,    -- よく使う買い物チャネル
-            monthly_spending INTEGER  -- 月の消費額(円)
-        );
-
-        -- アンケートの質問サマリ
-        CREATE TABLE survey_questions (
-            question_id   INTEGER PRIMARY KEY,
-            category      TEXT, -- 質問カテゴリ
-            question_text TEXT  -- 質問文（回答は1〜5の5段階）
-        );
-
-        -- アンケートの回答（顧客 × 質問）
-        CREATE TABLE survey_answers (
-            answer_id   INTEGER PRIMARY KEY AUTOINCREMENT,
-            customer_id INTEGER REFERENCES customers(customer_id),
-            question_id INTEGER REFERENCES survey_questions(question_id),
-            answer      INTEGER -- 1=全くそう思わない 〜 5=とてもそう思う
-        );
-    """)
+    conn.executescript(SCHEMA_PATH.read_text(encoding="utf-8"))  # テーブルを作り直す
 
     customers = [make_customer(i) for i in range(1, NUM_CUSTOMERS + 1)]
     conn.executemany(
