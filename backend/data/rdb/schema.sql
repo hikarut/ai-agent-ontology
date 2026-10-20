@@ -1,5 +1,5 @@
 -- SQLite のテーブル定義（このファイルがテーブル構成の正式な定義です）
--- data/create_sqlite.py の実行時に読み込まれ、テーブルを作り直します。
+-- data/rdb/create_sqlite.py の実行時に読み込まれ、テーブルを作り直します。
 
 DROP TABLE IF EXISTS survey_answers;
 DROP TABLE IF EXISTS survey_questions;

@@ -1,6 +1,6 @@
 """サンプルデータ（顧客100人 + アンケート）を SQLite に作成するスクリプト。
 
-実行: python -m data.create_sqlite   （backend/ ディレクトリで実行）→ backend/data/customers.db が作られます
+実行: python -m data.rdb.create_sqlite   （backend/ ディレクトリで実行）→ backend/data/rdb/customers.db が作られます
 """
 
 import random
@@ -10,7 +10,7 @@ from pathlib import Path
 
 from faker import Faker
 
-from data.knowledge import BRANDS, HOBBIES, PREFECTURES, SURVEY_QUESTIONS, VALUES
+from data.common.knowledge import BRANDS, HOBBIES, PREFECTURES, SURVEY_QUESTIONS, VALUES
 from services.db import DB_PATH
 
 SCHEMA_PATH = Path(__file__).parent / "schema.sql"  # テーブル定義

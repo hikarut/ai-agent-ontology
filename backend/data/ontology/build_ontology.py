@@ -1,6 +1,6 @@
 """SQLite の顧客データを Neo4j にオントロジー（知識グラフ）として登録するスクリプト。
 
-実行: python -m data.build_ontology   （backend/ ディレクトリで実行）
+実行: python -m data.ontology.build_ontology   （backend/ ディレクトリで実行）
 
 グラフの構造（ノード -[リレーション]-> ノード）:
     (Customer) -[LIVES_IN]->        (City) -[LOCATED_IN]-> (Prefecture) -[PART_OF]-> (Region)
@@ -16,7 +16,7 @@
     (Customer) -[HOLDS]->           (Value)
 """
 
-from data.knowledge import BRANDS, HOBBIES, PREFECTURES
+from data.common.knowledge import BRANDS, HOBBIES, PREFECTURES
 from services import db
 from services.ontology import driver, run
 

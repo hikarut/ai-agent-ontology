@@ -1,5 +1,5 @@
 .venv/
 __pycache__/
 .env
-backend/data/customers.db
+backend/data/rdb/customers.db
 .DS_Store

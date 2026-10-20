@@ -27,13 +27,20 @@ LLM・指示文は両方同じで、違いは「顧客情報の表現方法」�
 
 | フォルダ | 役割 | いつ使うか |
 | --- | --- | --- |
-| `data/` | サンプルデータを作り、SQLite と Neo4j に登録する | 最初に1回（データを作り直す時も） |
+| `data/` | サンプルデータを作り、SQLite（`data/rdb/`）と Neo4j（`data/ontology/`）に登録する | 最初に1回（データを作り直す時も） |
 | `services/` | データの取得とデジタルツイン本体。API と精度評価の両方から使う | API の起動中ずっと |
 | `evaluation/` | 2種類のツインの精度を比較する | 精度を確かめたい時 |
 
 ```
 【1. データ準備】 data/
-  create_sqlite.py ──▶ SQLite (data/customers.db) ──▶ build_ontology.py ──▶ Neo4j（知識グラフ）
+  common/knowledge.py（共通の概念の定義）
+     │
+     ├─▶ rdb/create_sqlite.py       ──▶ SQLite (data/rdb/customers.db)
+     │                                        │
+     └─▶ ontology/build_ontology.py ◀─────────┘ SQLite の顧客データを読む
+                │
+                ▼
+            Neo4j（知識グラフ）
 
 【2. デジタルツイン】 services/
   db.py（SQLite を読む）      ──▶ twins.py の RDB版ツイン          （LangChain + Claude）
@@ -53,12 +60,15 @@ LLM・指示文は両方同じで、違いは「顧客情報の表現方法」�
 │   ├── main.py                # FastAPI（API サーバー）のエントリーポイント
 │   ├── requirements.txt       # Python の依存パッケージ
 │   ├── .env.example           # 環境変数のサンプル（.env にコピーして使う）
-│   ├── data/                  # 1. データ準備
-│   │   ├── schema.sql         #   SQLite のテーブル定義（テーブル構成の正式な定義）
-│   │   ├── knowledge.py       #   ドメイン知識（趣味→価値観、ブランド→価値観などの概念の関係）とアンケート質問
-│   │   ├── create_sqlite.py   #   サンプルデータ(顧客100人 + アンケート)を SQLite に作成
-│   │   ├── build_ontology.py  #   SQLite のデータを Neo4j にグラフとして登録
-│   │   └── customers.db       #   create_sqlite.py で作られる SQLite のファイル（git 管理外）
+│   ├── data/                      # 1. データ準備
+│   │   ├── common/                #   ── RDB・オントロジー共通
+│   │   │   └── knowledge.py       #      ドメイン知識（趣味→価値観などの概念の関係）とアンケート質問
+│   │   ├── rdb/                   #   ── RDB（SQLite）
+│   │   │   ├── schema.sql         #      テーブル定義（テーブル構成の正式な定義）
+│   │   │   ├── create_sqlite.py   #      サンプルデータ(顧客100人 + アンケート)を SQLite に作成
+│   │   │   └── customers.db       #      create_sqlite.py で作られる SQLite のファイル（git 管理外）
+│   │   └── ontology/              #   ── オントロジー（Neo4j）
+│   │       └── build_ontology.py  #      SQLite のデータを Neo4j にグラフとして登録
 │   ├── services/              # 2. API と精度評価から使う処理
 │   │   ├── db.py              #   SQLite からデータを取得する関数（取得結果の型も定義）
 │   │   ├── ontology.py        #   Neo4j からグラフを取得する関数
@@ -84,7 +94,7 @@ LLM・指示文は両方同じで、違いは「顧客情報の表現方法」�
 
 ### SQLite（RDB）
 
-テーブルの正式な定義は [`backend/data/schema.sql`](backend/data/schema.sql) です。
+テーブルの正式な定義は [`backend/data/rdb/schema.sql`](backend/data/rdb/schema.sql) です。
 Python で取得したときのデータの形（カラム名と型）は、[`backend/services/db.py`](backend/services/db.py) の `Customer` / `Question` 型で確認できます。
 テーブルを変更するときは、この2つのファイルを合わせて直してください。以下の表は、各カラムの意味と例の説明です。
 
@@ -120,7 +130,7 @@ Python で取得したときのデータの形（カラム名と型）は、[`ba
 | question_id | 質問ID（survey_questions を参照） |
 | answer | 1=全くそう思わない 〜 5=とてもそう思う |
 
-> アンケート回答はダミーです。`data/create_sqlite.py` の `make_answer()` で、
+> アンケート回答はダミーです。`data/rdb/create_sqlite.py` の `make_answer()` で、
 > 顧客の趣味・価値観・ブランド・居住エリアなどから「もっともらしい回答」を作り、少しだけランダムな揺らぎを加えています。
 
 ### Neo4j（オントロジー）
@@ -177,11 +187,11 @@ pip install -r requirements.txt
 # 環境変数を設定（.env を開いて ANTHROPIC_API_KEY を書き換える）
 cp .env.example .env
 
-# サンプルデータを SQLite に作成 → data/customers.db ができる
-python -m data.create_sqlite
+# サンプルデータを SQLite に作成 → data/rdb/customers.db ができる
+python -m data.rdb.create_sqlite
 
 # SQLite のデータを Neo4j にオントロジーとして登録
-python -m data.build_ontology
+python -m data.ontology.build_ontology
 
 # API サーバーを起動
 uvicorn main:app --reload
@@ -191,7 +201,7 @@ source .venv/bin/activate && uvicorn main:app --reload
 ```
 
 > Python のコマンドは、すべて `backend/` ディレクトリで実行します。
-> `python -m data.create_sqlite` は「`data/create_sqlite.py` を実行する」という意味です。
+> `python -m data.rdb.create_sqlite` は「`data/rdb/create_sqlite.py` を実行する」という意味です（フォルダの区切り `/` を `.` で書きます）。
 > `-m` を付けて実行すると、`data/` や `services/` のファイルどうしを `from services import db` のように読み込めます。
 
 http://localhost:8000/docs を開くと API を試せます。
@@ -253,5 +263,5 @@ RETURN c.name, collect(x.name) AS 根拠
 ## カスタマイズのヒント
 
 - **モデルの変更**: `.env` の `ANTHROPIC_MODEL` を変更（例: `claude-sonnet-5-5` にすると安く速くなる）
-- **概念の関係を増やす**: `data/knowledge.py` の `HOBBIES` / `BRANDS` を編集し、`python -m data.create_sqlite && python -m data.build_ontology` を再実行
-- **質問を増やす**: `data/knowledge.py` の `SURVEY_QUESTIONS` に追加し、同様に再実行
+- **概念の関係を増やす**: `data/common/knowledge.py` の `HOBBIES` / `BRANDS` を編集し、`python -m data.rdb.create_sqlite && python -m data.ontology.build_ontology` を再実行
+- **質問を増やす**: `data/common/knowledge.py` の `SURVEY_QUESTIONS` に追加し、同様に再実行

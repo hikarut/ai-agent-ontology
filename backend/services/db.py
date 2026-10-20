@@ -1,6 +1,6 @@
 """SQLite（RDB）からデータを取得する関数
 
-テーブルの正式な定義は data/schema.sql を参照してください。
+テーブルの正式な定義は data/rdb/schema.sql を参照してください。
 下の TypedDict は、各関数が返す1行分のデータの形（カラム名と型）を表しています。
 """
 
@@ -8,8 +8,8 @@ import sqlite3
 from pathlib import Path
 from typing import TypedDict
 
-# SQLite のファイルは data/create_sqlite.py で作成される
-DB_PATH = Path(__file__).parent.parent / "data" / "customers.db"
+# SQLite のファイルは data/rdb/create_sqlite.py で作成される
+DB_PATH = Path(__file__).parent.parent / "data" / "rdb" / "customers.db"
 
 class CustomerSummary(TypedDict):
     """customers テーブルの一部（顧客一覧用）"""
