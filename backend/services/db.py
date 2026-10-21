@@ -23,14 +23,14 @@ class Customer(CustomerSummary):
     """customers テーブルの1行（CustomerSummary の項目 + 以下の項目）"""
     city: str              # 市区町村
     occupation: str        # 職業
-    annual_income: int     # 年収(万円)
+    annual_income: str     # 年収のレンジ(例: 300万〜400万円)
     household: str         # 家族構成
     has_children: int      # 子どもの有無(1/0)
     hobbies: str           # 趣味(カンマ区切り)
     personal_values: str   # 価値観(カンマ区切り)
     favorite_brands: str   # 好きなブランド(カンマ区切り)
     shopping_channel: str  # よく使う買い物チャネル
-    monthly_spending: int  # 月の消費額(円)
+    monthly_spending: str  # 世帯の月の消費額のレンジ(例: 20万〜25万円)
 
 class Question(TypedDict):
     """survey_questions テーブルの1行"""

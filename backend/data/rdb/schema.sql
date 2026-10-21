@@ -14,14 +14,14 @@ CREATE TABLE customers (
     prefecture       TEXT,    -- 都道府県
     city             TEXT,    -- 市区町村
     occupation       TEXT,    -- 職業
-    annual_income    INTEGER, -- 年収(万円)
+    annual_income    TEXT,    -- 年収のレンジ(例: 300万〜400万円)
     household        TEXT,    -- 家族構成
     has_children     INTEGER, -- 子どもの有無(1/0)
     hobbies          TEXT,    -- 趣味(カンマ区切り)
     personal_values  TEXT,    -- 価値観(カンマ区切り)
     favorite_brands  TEXT,    -- 好きなブランド(カンマ区切り)
     shopping_channel TEXT,    -- よく使う買い物チャネル
-    monthly_spending INTEGER  -- 月の消費額(円)
+    monthly_spending TEXT     -- 世帯の月の消費額のレンジ(例: 20万〜25万円)
 );
 
 -- アンケートの質問サマリ

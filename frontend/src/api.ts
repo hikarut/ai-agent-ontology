@@ -13,13 +13,13 @@ export type CustomerSummary = {
 export type Profile = CustomerSummary & {
   city: string
   occupation: string
-  annual_income: number
+  annual_income: string // 例: 300万〜400万円
   household: string
   hobbies: string
   personal_values: string
   favorite_brands: string
   shopping_channel: string
-  monthly_spending: number
+  monthly_spending: string // 例: 20万〜25万円
 }
 
 export type GraphNode = { id: string; label: string; name: string }

@@ -29,9 +29,9 @@ SYSTEM_PROMPT = """あなたは、以下のデータで表される実在の顧�
 # SQLite のカラム名 → 日本語ラベル
 COLUMN_LABELS = {
     "name": "氏名", "gender": "性別", "age": "年齢", "prefecture": "都道府県", "city": "市区町村",
-    "occupation": "職業", "annual_income": "年収(万円)", "household": "家族構成",
+    "occupation": "職業", "annual_income": "年収", "household": "家族構成",
     "hobbies": "趣味", "personal_values": "価値観", "favorite_brands": "好きなブランド",
-    "shopping_channel": "よく使う買い物チャネル", "monthly_spending": "月の消費額(円)",
+    "shopping_channel": "よく使う買い物チャネル", "monthly_spending": "世帯の月の消費額",
 }
 
 def rdb_profile(customer_id: int) -> str:
@@ -49,7 +49,7 @@ def ontology_profile(customer_id: int) -> str:
 
     customer = next(n for n in graph["nodes"] if n["label"] == "Customer")
     lines = [f"## 本人\n- {customer['name']} / {customer['gender']} / {customer['age']}歳 / "
-             f"年収{customer['annual_income']}万円 / 月の消費額{customer['monthly_spending']}円",
+             f"年収{customer['annual_income']} / 世帯の月の消費額{customer['monthly_spending']}",
              "\n## 関係グラフ（ノード -[関係]-> ノード）"]
     lines += [f"- {label(e['source'])} -[{e['type']}]-> {label(e['target'])}" for e in graph["edges"]]
 

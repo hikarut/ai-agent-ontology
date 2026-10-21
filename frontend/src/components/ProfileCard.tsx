@@ -50,8 +50,8 @@ export default function ProfileCard({ profile: p }: { profile: Profile }) {
       </div>
 
       <div className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-4">
-        <Stat label="年収" value={`${p.annual_income}万円`} mono />
-        <Stat label="月の消費額" value={`¥${p.monthly_spending.toLocaleString()}`} mono />
+        <Stat label="年収" value={p.annual_income} mono />
+        <Stat label="世帯の月の消費額" value={p.monthly_spending} mono />
         <Stat label="家族構成" value={p.household} />
         <Stat label="よく使うチャネル" value={p.shopping_channel} />
       </div>

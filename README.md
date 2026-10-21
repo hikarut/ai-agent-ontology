@@ -106,13 +106,13 @@ Python で取得したときのデータの形（カラム名と型）は、[`ba
 | customer_id | 顧客ID | 1 |
 | name / gender / age | 氏名 / 性別 / 年齢 | 佐藤 淳 / 男性 / 19 |
 | prefecture / city | 住所（都道府県 / 市区町村） | 新潟県 / 長岡市 |
-| occupation / annual_income | 職業 / 年収(万円) | 学生 / 31 |
+| occupation / annual_income | 職業 / 年収のレンジ | 学生 / 0〜100万円 |
 | household / has_children | 家族構成 / 子どもの有無 | 一人暮らし / 0 |
 | hobbies | 趣味（カンマ区切り） | ランニング,釣り |
 | personal_values | 価値観（カンマ区切り） | アウトドア志向 |
 | favorite_brands | 好きなブランド（カンマ区切り） | パタゴニア,スノーピーク |
 | shopping_channel | よく使う買い物チャネル | EC中心 |
-| monthly_spending | 月の消費額(円) | 10000 |
+| monthly_spending | 世帯の月の消費額のレンジ | 10万〜15万円 |
 
 **survey_questions**（アンケートの質問サマリ：10問）
 
