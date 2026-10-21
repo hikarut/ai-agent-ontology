@@ -15,6 +15,7 @@ class CustomerSummary(TypedDict):
     """customers テーブルの一部（顧客一覧用）"""
     customer_id: int
     name: str              # 氏名
+    name_kana: str         # 氏名のフリガナ
     gender: str            # 性別
     age: int               # 年齢
     prefecture: str        # 都道府県
@@ -51,7 +52,7 @@ def query(sql: str, params: tuple = ()) -> list[dict]:
     return rows
 
 def list_customers() -> list[CustomerSummary]:
-    return query("SELECT customer_id, name, gender, age, prefecture FROM customers ORDER BY customer_id")
+    return query("SELECT customer_id, name, name_kana, gender, age, prefecture FROM customers ORDER BY customer_id")
 
 def get_customer(customer_id: int) -> Customer | None:
     rows = query("SELECT * FROM customers WHERE customer_id = ?", (customer_id,))

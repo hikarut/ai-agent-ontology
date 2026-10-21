@@ -42,7 +42,10 @@ export default function App() {
             <p className="text-xs text-slate-500">
               {PAGE_TITLES[page]} / <span className="font-mono">#{customerId}</span>
             </p>
-            <h1 className="text-base font-semibold tracking-tight">{detail?.profile.name ?? '読み込み中...'}</h1>
+            <h1 className="text-base font-semibold tracking-tight">
+              {detail?.profile.name ?? '読み込み中...'}
+              <span className="ml-2 text-xs font-normal text-slate-500">{detail?.profile.name_kana}</span>
+            </h1>
           </div>
         </header>
 

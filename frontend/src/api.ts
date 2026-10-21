@@ -5,6 +5,7 @@ export type TwinType = 'rdb' | 'ontology'
 export type CustomerSummary = {
   customer_id: number
   name: string
+  name_kana: string // フリガナ
   gender: string
   age: number
   prefecture: string

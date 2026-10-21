@@ -22,8 +22,8 @@ type Props = {
 
 export default function Sidebar({ page, onPageChange, customers, selectedId, onSelect }: Props) {
   const [keyword, setKeyword] = useState('')
-  // 名前か都道府県にキーワードを含む顧客だけを表示する
-  const filtered = customers.filter((c) => (c.name + c.prefecture).includes(keyword))
+  // 名前・フリガナ・都道府県のどれかにキーワードを含む顧客だけを表示する
+  const filtered = customers.filter((c) => (c.name + c.name_kana + c.prefecture).includes(keyword))
 
   return (
     <aside className="flex h-screen w-72 shrink-0 flex-col bg-slate-900 text-slate-300">
@@ -62,7 +62,7 @@ export default function Sidebar({ page, onPageChange, customers, selectedId, onS
           <MagnifyingGlass size={16} className="text-slate-500" />
           <input
             className="w-full bg-transparent text-sm text-white outline-none placeholder:text-slate-500"
-            placeholder="名前・都道府県で検索"
+            placeholder="名前・フリガナ・都道府県で検索"
             value={keyword}
             onChange={(e) => setKeyword(e.target.value)}
           />

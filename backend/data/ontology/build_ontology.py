@@ -57,7 +57,7 @@ def build():
     # 2. 顧客ごとのデータを登録し、概念ノードとつなぐ
     for c in db.query("SELECT * FROM customers"):
         run("""
-            CREATE (c:Customer {id: $id, name: $name, gender: $gender, age: $age,
+            CREATE (c:Customer {id: $id, name: $name, name_kana: $name_kana, gender: $gender, age: $age,
                                 annual_income: $income, monthly_spending: $spending})
             MERGE (city:City {name: $city})
             MERGE (pref:Prefecture {name: $pref})
@@ -75,7 +75,7 @@ def build():
             WITH DISTINCT c
             UNWIND $values AS value   MATCH (v:Value {name: value})  CREATE (c)-[:HOLDS]->(v)
         """,
-            id=c["customer_id"], name=c["name"], gender=c["gender"], age=c["age"],
+            id=c["customer_id"], name=c["name"], name_kana=c["name_kana"], gender=c["gender"], age=c["age"],
             income=c["annual_income"], spending=c["monthly_spending"],
             city=c["city"], pref=c["prefecture"], occupation=c["occupation"],
             age_group=f"{c['age'] // 10 * 10}代", household=c["household"], channel=c["shopping_channel"],

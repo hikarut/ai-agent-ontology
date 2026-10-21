@@ -82,9 +82,16 @@ def make_spending(age: int, household: str, income: float) -> float:
     income_effect = (max(income, 400 if household.startswith("夫婦") else 100) / 400) ** 0.3
     return base * income_effect * random.lognormvariate(0, 0.15)
 
+def make_name(gender: str) -> tuple[str, str]:
+    """氏名とフリガナの組を作る（例: ("佐藤 淳", "サトウ ジュン")）"""
+    last, last_kana, _ = fake.last_name_pair()
+    first, first_kana, _ = fake.first_name_male_pair() if gender == "男性" else fake.first_name_female_pair()
+    return f"{last} {first}", f"{last_kana} {first_kana}"
+
 def make_customer(customer_id: int) -> dict:
     """顧客1人分のダミーデータを作る"""
     gender = random.choice(["男性", "女性"])
+    name, name_kana = make_name(gender)
     age = random.randint(18, 79)
     prefecture = random.choice(list(PREFECTURES))
     city = random.choice(PREFECTURES[prefecture][2])
@@ -131,7 +138,8 @@ def make_customer(customer_id: int) -> dict:
 
     return {
         "customer_id": customer_id,
-        "name": fake.name_male() if gender == "男性" else fake.name_female(),
+        "name": name,
+        "name_kana": name_kana,
         "gender": gender,
         "age": age,
         "prefecture": prefecture,

@@ -107,7 +107,8 @@ Python で取得したときのデータの形（カラム名と型）は、[`ba
 | カラム | 内容 | 例 |
 | --- | --- | --- |
 | customer_id | 顧客ID | 1 |
-| name / gender / age | 氏名 / 性別 / 年齢 | 佐藤 淳 / 男性 / 19 |
+| name / name_kana | 氏名 / フリガナ | 山崎 晃 / ヤマザキ アキラ |
+| gender / age | 性別 / 年齢 | 男性 / 19 |
 | prefecture / city | 住所（都道府県 / 市区町村） | 新潟県 / 長岡市 |
 | occupation / annual_income | 職業 / 年収のレンジ | 学生 / 0〜100万円 |
 | household / has_children | 家族構成 / 子どもの有無 | 一人暮らし / 0 |

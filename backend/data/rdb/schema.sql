@@ -9,6 +9,7 @@ DROP TABLE IF EXISTS customers;
 CREATE TABLE customers (
     customer_id      INTEGER PRIMARY KEY,
     name             TEXT,    -- 氏名
+    name_kana        TEXT,    -- 氏名のフリガナ
     gender           TEXT,    -- 性別
     age              INTEGER, -- 年齢
     prefecture       TEXT,    -- 都道府県

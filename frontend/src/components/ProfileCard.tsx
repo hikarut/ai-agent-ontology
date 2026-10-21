@@ -40,6 +40,7 @@ export default function ProfileCard({ profile: p }: { profile: Profile }) {
           {p.name.slice(0, 1)}
         </div>
         <div className="min-w-0 flex-1">
+          <p className="text-xs text-slate-500">{p.name_kana}</p>
           <h2 className="text-lg font-semibold tracking-tight text-slate-900">{p.name}</h2>
           <p className="flex items-center gap-1 text-sm text-slate-500">
             <MapPin size={14} />

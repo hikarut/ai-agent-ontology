@@ -10,6 +10,7 @@ import OntologyGraph from '../components/OntologyGraph'
 const COLUMNS: [keyof Profile, string][] = [
   ['customer_id', '顧客ID'],
   ['name', '氏名'],
+  ['name_kana', '氏名のフリガナ'],
   ['gender', '性別'],
   ['age', '年齢'],
   ['prefecture', '都道府県'],
