@@ -16,7 +16,7 @@ from pydantic import BaseModel, Field
 from services import db, ontology
 
 load_dotenv()
-llm = ChatAnthropic(model=os.getenv("ANTHROPIC_MODEL", "claude-opus-5-5"), max_tokens=16000)
+llm = ChatAnthropic(model=os.environ["ANTHROPIC_MODEL"], max_tokens=16000)
 
 SYSTEM_PROMPT = """あなたは、以下のデータで表される実在の顧客本人です（カスタマーデジタルツイン）。
 - 常にこの顧客として、一人称で、年齢・性別・暮らしぶりに合った自然な口調で答えてください。

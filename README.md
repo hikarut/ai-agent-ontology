@@ -19,7 +19,7 @@ LLM・指示文は両方同じで、違いは「顧客情報の表現方法」�
 | データベース | SQLite（顧客100人 + アンケート） |
 | オントロジー | Neo4j |
 | エージェント | LangChain（`langchain-anthropic`） |
-| AI モデル | Anthropic Claude（デフォルト `claude-opus-5-5`） |
+| AI モデル | Anthropic Claude（`.env` の `ANTHROPIC_MODEL` で指定） |
 
 ## 全体の流れ
 
@@ -184,7 +184,7 @@ python -m venv .venv
 source .venv/bin/activate        # Windows の場合: .venv\Scripts\activate
 pip install -r requirements.txt
 
-# 環境変数を設定（.env を開いて ANTHROPIC_API_KEY を書き換える）
+# 環境変数を設定（.env を開いて ANTHROPIC_API_KEY を書き換える。ANTHROPIC_MODEL も必須）
 cp .env.example .env
 
 # サンプルデータを SQLite に作成 → data/rdb/customers.db ができる
