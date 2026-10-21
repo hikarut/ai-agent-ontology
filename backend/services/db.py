@@ -38,6 +38,10 @@ class Question(TypedDict):
     category: str          # 質問カテゴリ
     question_text: str     # 質問文（回答は1〜5の5段階）
 
+class SurveyRow(Question):
+    """質問と、その顧客の実際の回答（survey_questions と survey_answers を結合したもの）"""
+    answer: int            # 1〜5
+
 def query(sql: str, params: tuple = ()) -> list[dict]:
     """SQL を実行して、結果を辞書のリストで返す"""
     conn = sqlite3.connect(DB_PATH)
@@ -60,3 +64,12 @@ def get_answers(customer_id: int) -> dict[int, int]:
     """survey_answers テーブルから、実際のアンケート回答を {question_id: answer} で返す"""
     rows = query("SELECT question_id, answer FROM survey_answers WHERE customer_id = ?", (customer_id,))
     return {r["question_id"]: r["answer"] for r in rows}
+
+def get_survey(customer_id: int) -> list[SurveyRow]:
+    """質問文と実際の回答を、質問ごとに1行で返す"""
+    return query(
+        """SELECT q.question_id, q.category, q.question_text, a.answer
+           FROM survey_questions q JOIN survey_answers a ON a.question_id = q.question_id
+           WHERE a.customer_id = ? ORDER BY q.question_id""",
+        (customer_id,),
+    )

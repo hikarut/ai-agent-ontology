@@ -1,11 +1,26 @@
-// 左側のサイドメニュー：顧客を検索して選ぶ
+// 左側のサイドメニュー：ページを切り替え、顧客を検索して選ぶ
 import { useState } from 'react'
-import { Fingerprint, MagnifyingGlass } from '@phosphor-icons/react'
+import type { ReactNode } from 'react'
+import { ChatCircleDots, Fingerprint, MagnifyingGlass, Table } from '@phosphor-icons/react'
 import type { CustomerSummary } from '../api'
 
-type Props = { customers: CustomerSummary[]; selectedId: number; onSelect: (id: number) => void }
+export type Page = 'chat' | 'data'
 
-export default function Sidebar({ customers, selectedId, onSelect }: Props) {
+// メニューのリンク
+const MENU: { page: Page; label: string; icon: ReactNode }[] = [
+  { page: 'chat', label: 'ツインと対話', icon: <ChatCircleDots size={18} /> },
+  { page: 'data', label: '実データ確認', icon: <Table size={18} /> },
+]
+
+type Props = {
+  page: Page
+  onPageChange: (page: Page) => void
+  customers: CustomerSummary[]
+  selectedId: number
+  onSelect: (id: number) => void
+}
+
+export default function Sidebar({ page, onPageChange, customers, selectedId, onSelect }: Props) {
   const [keyword, setKeyword] = useState('')
   // 名前か都道府県にキーワードを含む顧客だけを表示する
   const filtered = customers.filter((c) => (c.name + c.prefecture).includes(keyword))
@@ -22,6 +37,24 @@ export default function Sidebar({ customers, selectedId, onSelect }: Props) {
           <p className="text-xs text-slate-500">デジタルツイン管理</p>
         </div>
       </div>
+
+      {/* メニュー */}
+      <p className="px-5 pb-2 text-[11px] font-medium tracking-wider text-slate-500 uppercase">Menu</p>
+      <nav className="space-y-0.5 px-3 pb-4">
+        {MENU.map((m) => (
+          <button
+            key={m.page}
+            onClick={() => onPageChange(m.page)}
+            className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors duration-150 ${
+              page === m.page ? 'bg-slate-800 text-white' : 'hover:bg-slate-800/50 hover:text-white'
+            }`}
+          >
+            <span className={page === m.page ? 'text-indigo-400' : 'text-slate-500'}>{m.icon}</span>
+            {m.label}
+          </button>
+        ))}
+      </nav>
+      <div className="mx-5 mb-4 border-t border-slate-800" />
 
       {/* 検索 */}
       <div className="px-4 pb-4">
