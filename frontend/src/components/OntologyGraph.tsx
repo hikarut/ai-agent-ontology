@@ -1,9 +1,10 @@
 // Neo4j から取得したグラフを、顧客を中心にした同心円状に描画する（ライブラリ不使用の SVG）
+import { Graph as GraphIcon } from '@phosphor-icons/react'
 import type { Graph } from '../api'
 
 // ノードの種類ごとの色
 const COLORS: Record<string, string> = {
-  Customer: '#2563eb',
+  Customer: '#6366f1',
   Hobby: '#16a34a',
   HobbyCategory: '#86efac',
   Brand: '#ea580c',
@@ -45,33 +46,53 @@ export default function OntologyGraph({ graph }: { graph: Graph }) {
   }
 
   return (
-    <div className="rounded-lg bg-white p-4 shadow">
-      <h3 className="mb-2 text-sm font-semibold text-gray-600">オントロジー（Neo4j）上の関係</h3>
-      <svg viewBox={`0 0 ${SIZE} ${SIZE}`} className="w-full">
+    <section className="rounded-xl bg-white shadow-sm ring-1 ring-slate-200">
+      <div className="flex items-center gap-3 border-b border-slate-200 px-4 py-3">
+        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 text-slate-600">
+          <GraphIcon size={18} />
+        </div>
+        <div className="flex-1">
+          <h3 className="text-sm font-semibold text-slate-900">オントロジー</h3>
+          <p className="text-xs text-slate-500">Neo4j 上の関係（顧客から3ホップ）</p>
+        </div>
+        <span className="font-mono text-xs text-slate-400">{graph.nodes.length} nodes</span>
+      </div>
+      <svg viewBox={`0 0 ${SIZE} ${SIZE}`} className="w-full p-2">
+        {/* 円の補助線 */}
+        {[1, 2, 3].map((d) => (
+          <circle key={d} cx={CENTER} cy={CENTER} r={d * 65} fill="none" stroke="#f1f5f9" />
+        ))}
         {graph.edges.map((e, i) => (
-          <line key={i} x1={pos[e.source].x} y1={pos[e.source].y} x2={pos[e.target].x} y2={pos[e.target].y} stroke="#d1d5db">
+          <line key={i} x1={pos[e.source].x} y1={pos[e.source].y} x2={pos[e.target].x} y2={pos[e.target].y} stroke="#e2e8f0">
             <title>{e.type}</title>
           </line>
         ))}
         {graph.nodes.map((n) => (
           <g key={n.id}>
-            <circle cx={pos[n.id].x} cy={pos[n.id].y} r={n.label === 'Customer' ? 14 : 8} fill={COLORS[n.label] ?? '#9ca3af'}>
+            <circle
+              cx={pos[n.id].x}
+              cy={pos[n.id].y}
+              r={n.label === 'Customer' ? 14 : 7}
+              fill={COLORS[n.label] ?? '#94a3b8'}
+              stroke="#fff"
+              strokeWidth="2"
+            >
               <title>{n.label}</title>
             </circle>
-            <text x={pos[n.id].x} y={pos[n.id].y - 12} textAnchor="middle" fontSize="12" fill="#374151">
+            <text x={pos[n.id].x} y={pos[n.id].y - 12} textAnchor="middle" fontSize="12" fill="#334155">
               {n.name}
             </text>
           </g>
         ))}
       </svg>
-      <div className="mt-2 flex flex-wrap gap-2 text-xs text-gray-600">
+      <div className="flex flex-wrap gap-x-3 gap-y-1.5 border-t border-slate-200 px-4 py-3 text-[11px] text-slate-500">
         {Object.entries(COLORS).map(([label, color]) => (
-          <span key={label} className="flex items-center gap-1">
-            <span className="inline-block h-3 w-3 rounded-full" style={{ background: color }} />
+          <span key={label} className="flex items-center gap-1.5">
+            <span className="inline-block h-2 w-2 rounded-full" style={{ background: color }} />
             {label}
           </span>
         ))}
       </div>
-    </div>
+    </section>
   )
 }

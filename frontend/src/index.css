@@ -1,1 +1,7 @@
 @import "tailwindcss";
+
+/* フォント（index.html で Google Fonts から読み込んでいる） */
+@theme {
+  --font-sans: "Inter", "Noto Sans JP", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+}

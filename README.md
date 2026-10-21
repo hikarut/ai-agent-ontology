@@ -15,7 +15,7 @@ LLM・指示文は両方同じで、違いは「顧客情報の表現方法」�
 | 役割 | 技術 |
 | --- | --- |
 | バックエンド | FastAPI（Python） |
-| フロントエンド | Vite + React + TypeScript + Tailwind CSS |
+| フロントエンド | Vite + React + TypeScript + Tailwind CSS + Phosphor Icons |
 | データベース | SQLite（顧客100人 + アンケート） |
 | オントロジー | Neo4j |
 | エージェント | LangChain（`langchain-anthropic`） |
@@ -81,10 +81,11 @@ LLM・指示文は両方同じで、違いは「顧客情報の表現方法」�
     ├── vite.config.ts     # Tailwind の設定と、/api をバックエンドへ転送する設定
     └── src/
         ├── main.tsx
-        ├── index.css      # Tailwind の読み込み
+        ├── index.css      # Tailwind の読み込みとフォントの設定
         ├── api.ts         # バックエンドとの通信・型定義
-        ├── App.tsx        # 画面全体（顧客選択・送信処理）
+        ├── App.tsx        # 画面全体のレイアウト（サイドメニュー＋メイン）と送信処理
         └── components/
+            ├── Sidebar.tsx        # 左のサイドメニュー（顧客の検索・選択）
             ├── ProfileCard.tsx    # 顧客の趣味嗜好カード
             ├── OntologyGraph.tsx  # Neo4j のグラフを SVG で描画
             └── ChatPanel.tsx      # ツインとの会話表示
