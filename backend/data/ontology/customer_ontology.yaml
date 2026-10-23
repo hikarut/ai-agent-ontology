@@ -1,4 +1,4 @@
-# オントロジー（概念と、概念どうしの関係）の定義
+# 顧客のオントロジー（顧客に関わる概念と、概念どうしの関係）の定義
 #
 # このファイルを編集したら、backend/ で次を実行してデータを作り直してください。
 #   python -m data.rdb.create_sqlite && python -m data.graphdb.build_graphdb

@@ -24,7 +24,7 @@ def build():
     """SQLite のデータから Neo4j にグラフを作る"""
     run("MATCH (n) DETACH DELETE n")  # 既存データを削除して作り直す
 
-    # 1. ドメイン知識（data/ontology/ontology.yaml に定義した概念どうしの関係）を登録
+    # 1. ドメイン知識（data/ontology/customer_ontology.yaml に定義した概念どうしの関係）を登録
     for value, description in VALUE_DESCRIPTIONS.items():
         run("MERGE (v:Value {name: $value}) SET v.description = $description", value=value, description=description)
 

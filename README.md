@@ -33,7 +33,7 @@ LLM・指示文は両方同じで、違いは「顧客情報の表現方法」�
 
 ```
 【1. データ準備】 data/
-  ontology/ontology.yaml・survey.yaml（共通の概念とアンケートの定義）→ knowledge.py が読み込む
+  ontology/customer_ontology.yaml・survey_ontology.yaml（顧客とアンケートのオントロジー）→ knowledge.py が読み込む
      │
      ├─▶ rdb/create_sqlite.py       ──▶ SQLite (data/rdb/customers.db)
      │                                        │
@@ -62,8 +62,8 @@ LLM・指示文は両方同じで、違いは「顧客情報の表現方法」�
 │   ├── .env.example           # 環境変数のサンプル（.env にコピーして使う）
 │   ├── data/                      # 1. データ準備
 │   │   ├── ontology/              #   ── オントロジー（意味の定義。RDB・グラフDB の両方から使う）
-│   │   │   ├── ontology.yaml      #      オントロジーの定義（価値観・趣味・ブランド・都道府県とその関係）
-│   │   │   ├── survey.yaml        #      アンケートの質問と、正解データ作成用の重み
+│   │   │   ├── customer_ontology.yaml  # 顧客のオントロジー（価値観・趣味・ブランド・都道府県とその関係）
+│   │   │   ├── survey_ontology.yaml    # アンケートのオントロジー（質問と、正解データ作成用の重み）
 │   │   │   └── knowledge.py       #      上の2つの YAML を読み込み、書き間違いをチェックする
 │   │   ├── rdb/                   #   ── RDB（SQLite）
 │   │   │   ├── schema.sql         #      テーブル定義（テーブル構成の正式な定義）
@@ -279,5 +279,5 @@ RETURN c.name, collect(x.name) AS 根拠
 ## カスタマイズのヒント
 
 - **モデルの変更**: `.env` の `ANTHROPIC_MODEL` を変更（例: `claude-sonnet-5-5` にすると安く速くなる）
-- **概念の関係を増やす**: `data/ontology/ontology.yaml` の `hobbies` / `brands` などを編集し、`python -m data.rdb.create_sqlite && python -m data.graphdb.build_graphdb` を再実行（存在しない価値観を参照するとエラーで教えてくれます）
-- **質問を増やす**: `data/ontology/survey.yaml` の `questions` に追加し、同様に再実行
+- **概念の関係を増やす**: `data/ontology/customer_ontology.yaml` の `hobbies` / `brands` などを編集し、`python -m data.rdb.create_sqlite && python -m data.graphdb.build_graphdb` を再実行（存在しない価値観を参照するとエラーで教えてくれます）
+- **質問を増やす**: `data/ontology/survey_ontology.yaml` の `questions` に追加し、同様に再実行

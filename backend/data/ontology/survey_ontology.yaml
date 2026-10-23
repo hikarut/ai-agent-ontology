@@ -1,8 +1,8 @@
-# アンケートの定義
+# アンケートのオントロジー（質問と、回答に影響する特徴）の定義
 #
 # 回答は 1=全くそう思わない 〜 5=とてもそう思う の5段階です。
 # weights は「どの特徴がどれだけ回答に影響するか」で、サンプルの正解データ（実際の回答）を作るときだけ使います。
-# weights に書けるのは、ontology.yaml の価値観（values）か、下の features の名前です。
+# weights に書けるのは、customer_ontology.yaml の価値観（values）か、下の features の名前です。
 
 # 価値観以外に weights で使える顧客の特徴（計算は data/rdb/create_sqlite.py の make_answer）
 features:
