@@ -1,0 +1,64 @@
+# アンケートの定義
+#
+# 回答は 1=全くそう思わない 〜 5=とてもそう思う の5段階です。
+# weights は「どの特徴がどれだけ回答に影響するか」で、サンプルの正解データ（実際の回答）を作るときだけ使います。
+# weights に書けるのは、ontology.yaml の価値観（values）か、下の features の名前です。
+
+# 価値観以外に weights で使える顧客の特徴（計算は data/rdb/create_sqlite.py の make_answer）
+features:
+  - name: 地方在住
+    description: 住んでいる都道府県のエリア区分が「地方」
+  - name: 高収入
+    description: 年収が800万円以上
+  - name: EC派
+    description: よく使う買い物チャネルが「EC中心」
+  - name: シニア
+    description: 60歳以上
+  - name: 若年層
+    description: 30歳未満
+  - name: 子育て世帯
+    description: 子どもがいる
+  - name: 料理好き
+    description: 趣味に「料理」を含む
+
+questions:
+  - id: 1
+    category: レジャー
+    text: 休日は自然の中で過ごしたい
+    weights: {アウトドア志向: 1.0, 地方在住: 0.3}
+  - id: 2
+    category: 食生活
+    text: 健康のためなら多少高くても良い食品を選ぶ
+    weights: {健康志向: 1.0, 高収入: 0.3}
+  - id: 3
+    category: 購買行動
+    text: 環境に配慮した商品を優先して買う
+    weights: {環境意識: 1.0}
+  - id: 4
+    category: 購買行動
+    text: 買い物ではまず価格の安さを重視する
+    weights: {節約志向: 1.0, 高級志向: -0.6, 高収入: -0.4}
+  - id: 5
+    category: 購買行動
+    text: 高価でも長く使える高品質なブランド品を買いたい
+    weights: {高級志向: 1.0, 高収入: 0.5, 節約志向: -0.4}
+  - id: 6
+    category: デジタル
+    text: 買い物はスマートフォンやECサイトで済ませることが多い
+    weights: {デジタル志向: 1.0, EC派: 0.8, シニア: -0.6}
+  - id: 7
+    category: トレンド
+    text: 新商品や流行のものはすぐに試したい
+    weights: {トレンド志向: 1.0, 若年層: 0.4, シニア: -0.4}
+  - id: 8
+    category: 家族
+    text: 休日は家族と過ごす時間を最優先にしたい
+    weights: {家族重視: 1.0, 子育て世帯: 0.8}
+  - id: 9
+    category: 食生活
+    text: 外食よりも自炊することが多い
+    weights: {家族重視: 0.5, 節約志向: 0.5, 料理好き: 1.0}
+  - id: 10
+    category: 暮らし
+    text: 車は生活に欠かせない
+    weights: {地方在住: 1.2, 子育て世帯: 0.5, アウトドア志向: 0.4}

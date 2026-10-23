@@ -27,17 +27,17 @@ LLM・指示文は両方同じで、違いは「顧客情報の表現方法」�
 
 | フォルダ | 役割 | いつ使うか |
 | --- | --- | --- |
-| `data/` | サンプルデータを作り、SQLite（`data/rdb/`）と Neo4j（`data/ontology/`）に登録する | 最初に1回（データを作り直す時も） |
+| `data/` | サンプルデータを作り、SQLite（`data/rdb/`）と Neo4j（`data/graphdb/`）に登録する | 最初に1回（データを作り直す時も） |
 | `services/` | データの取得とデジタルツイン本体。API と精度評価の両方から使う | API の起動中ずっと |
 | `evaluation/` | 2種類のツインの精度を比較する | 精度を確かめたい時 |
 
 ```
 【1. データ準備】 data/
-  common/knowledge.py（共通の概念の定義）
+  ontology/ontology.yaml・survey.yaml（共通の概念とアンケートの定義）→ knowledge.py が読み込む
      │
      ├─▶ rdb/create_sqlite.py       ──▶ SQLite (data/rdb/customers.db)
      │                                        │
-     └─▶ ontology/build_ontology.py ◀─────────┘ SQLite の顧客データを読む
+     └─▶ graphdb/build_graphdb.py ◀───────────┘ SQLite の顧客データを読む
                 │
                 ▼
             Neo4j（知識グラフ）
@@ -61,14 +61,16 @@ LLM・指示文は両方同じで、違いは「顧客情報の表現方法」�
 │   ├── requirements.txt       # Python の依存パッケージ
 │   ├── .env.example           # 環境変数のサンプル（.env にコピーして使う）
 │   ├── data/                      # 1. データ準備
-│   │   ├── common/                #   ── RDB・オントロジー共通
-│   │   │   └── knowledge.py       #      ドメイン知識（趣味→価値観などの概念の関係）とアンケート質問
+│   │   ├── ontology/              #   ── オントロジー（意味の定義。RDB・グラフDB の両方から使う）
+│   │   │   ├── ontology.yaml      #      オントロジーの定義（価値観・趣味・ブランド・都道府県とその関係）
+│   │   │   ├── survey.yaml        #      アンケートの質問と、正解データ作成用の重み
+│   │   │   └── knowledge.py       #      上の2つの YAML を読み込み、書き間違いをチェックする
 │   │   ├── rdb/                   #   ── RDB（SQLite）
 │   │   │   ├── schema.sql         #      テーブル定義（テーブル構成の正式な定義）
 │   │   │   ├── create_sqlite.py   #      サンプルデータ(顧客100人 + アンケート)を SQLite に作成
 │   │   │   └── customers.db       #      create_sqlite.py で作られる SQLite のファイル（git 管理外）
-│   │   └── ontology/              #   ── オントロジー（Neo4j）
-│   │       └── build_ontology.py  #      SQLite のデータを Neo4j にグラフとして登録
+│   │   └── graphdb/               #   ── グラフDB（Neo4j）
+│   │       └── build_graphdb.py   #      オントロジーと SQLite のデータを Neo4j にナレッジグラフとして登録
 │   ├── services/              # 2. API と精度評価から使う処理
 │   │   ├── db.py              #   SQLite からデータを取得する関数（取得結果の型も定義）
 │   │   ├── ontology.py        #   Neo4j からグラフを取得する関数
@@ -196,7 +198,7 @@ cp .env.example .env
 python -m data.rdb.create_sqlite
 
 # SQLite のデータを Neo4j にオントロジーとして登録
-python -m data.ontology.build_ontology
+python -m data.graphdb.build_graphdb
 
 # API サーバーを起動
 uvicorn main:app --reload
@@ -277,5 +279,5 @@ RETURN c.name, collect(x.name) AS 根拠
 ## カスタマイズのヒント
 
 - **モデルの変更**: `.env` の `ANTHROPIC_MODEL` を変更（例: `claude-sonnet-5-5` にすると安く速くなる）
-- **概念の関係を増やす**: `data/common/knowledge.py` の `HOBBIES` / `BRANDS` を編集し、`python -m data.rdb.create_sqlite && python -m data.ontology.build_ontology` を再実行
-- **質問を増やす**: `data/common/knowledge.py` の `SURVEY_QUESTIONS` に追加し、同様に再実行
+- **概念の関係を増やす**: `data/ontology/ontology.yaml` の `hobbies` / `brands` などを編集し、`python -m data.rdb.create_sqlite && python -m data.graphdb.build_graphdb` を再実行（存在しない価値観を参照するとエラーで教えてくれます）
+- **質問を増やす**: `data/ontology/survey.yaml` の `questions` に追加し、同様に再実行

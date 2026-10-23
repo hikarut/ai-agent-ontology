@@ -1,0 +1,175 @@
+# オントロジー（概念と、概念どうしの関係）の定義
+#
+# このファイルを編集したら、backend/ で次を実行してデータを作り直してください。
+#   python -m data.rdb.create_sqlite && python -m data.graphdb.build_graphdb
+# 書き間違い（存在しない価値観の参照など）は、読み込み時にエラーになります（data/ontology/knowledge.py）。
+
+# 価値観（ライフスタイル志向） → Neo4j の :Value ノード
+values:
+  - name: アウトドア志向
+    description: 自然の中での活動や、屋外で過ごす時間を好む
+  - name: 健康志向
+    description: 健康のために食事・運動・お金を使う
+  - name: 環境意識
+    description: 環境に配慮した商品や行動を選ぶ
+  - name: 節約志向
+    description: 価格を重視し、無駄な出費を避ける
+  - name: 高級志向
+    description: 価格よりも品質やブランドの価値を重視する
+  - name: デジタル志向
+    description: スマートフォンやオンラインのサービスを積極的に使う
+  - name: トレンド志向
+    description: 新しいものや流行をいち早く取り入れる
+  - name: 家族重視
+    description: 家族と過ごす時間や、家族のための消費を優先する
+
+# 趣味 → :Hobby ノード
+#   category: 趣味のカテゴリ   → (Hobby)-[:BELONGS_TO]->(HobbyCategory)
+#   suggests: 推測できる価値観 → (Hobby)-[:SUGGESTS]->(Value)
+hobbies:
+  - name: キャンプ
+    category: アウトドア
+    suggests: [アウトドア志向, 環境意識]
+  - name: 登山
+    category: アウトドア
+    suggests: [アウトドア志向, 健康志向]
+  - name: 釣り
+    category: アウトドア
+    suggests: [アウトドア志向]
+  - name: ランニング
+    category: スポーツ
+    suggests: [健康志向]
+  - name: ヨガ
+    category: スポーツ
+    suggests: [健康志向]
+  - name: ゴルフ
+    category: スポーツ
+    suggests: [高級志向]
+  - name: ゲーム
+    category: インドア
+    suggests: [デジタル志向]
+  - name: 読書
+    category: インドア
+    suggests: []
+  - name: 映画鑑賞
+    category: インドア
+    suggests: []
+  - name: 料理
+    category: 暮らし
+    suggests: [健康志向, 家族重視]
+  - name: 家庭菜園
+    category: 暮らし
+    suggests: [環境意識, 健康志向]
+  - name: DIY
+    category: 暮らし
+    suggests: [節約志向, 家族重視]
+  - name: ファッション
+    category: カルチャー
+    suggests: [トレンド志向]
+  - name: カフェ巡り
+    category: カルチャー
+    suggests: [トレンド志向]
+  - name: 旅行
+    category: レジャー
+    suggests: [高級志向, トレンド志向]
+  - name: 投資
+    category: マネー
+    suggests: [デジタル志向, 節約志向]
+  - name: ガジェット
+    category: テクノロジー
+    suggests: [デジタル志向, トレンド志向]
+
+# 好きなブランド → :Brand ノード
+#   category: 商品カテゴリ         → (Brand)-[:IN_CATEGORY]->(ProductCategory)
+#   reflects: ブランドが象徴する価値観 → (Brand)-[:REFLECTS]->(Value)
+brands:
+  - name: ユニクロ
+    category: アパレル
+    reflects: [節約志向]
+  - name: ZARA
+    category: アパレル
+    reflects: [トレンド志向]
+  - name: パタゴニア
+    category: アウトドア用品
+    reflects: [環境意識, アウトドア志向]
+  - name: スノーピーク
+    category: アウトドア用品
+    reflects: [アウトドア志向, 高級志向]
+  - name: ナイキ
+    category: スポーツ用品
+    reflects: [健康志向, トレンド志向]
+  - name: 無印良品
+    category: 生活雑貨
+    reflects: [環境意識, 節約志向]
+  - name: ニトリ
+    category: 家具・インテリア
+    reflects: [節約志向, 家族重視]
+  - name: Apple
+    category: 家電・ガジェット
+    reflects: [デジタル志向, 高級志向]
+  - name: ルイ・ヴィトン
+    category: ラグジュアリー
+    reflects: [高級志向]
+  - name: 業務スーパー
+    category: 食品
+    reflects: [節約志向, 家族重視]
+  - name: スターバックス
+    category: カフェ
+    reflects: [トレンド志向]
+  - name: オイシックス
+    category: 食品
+    reflects: [健康志向, 環境意識]
+
+# 都道府県 → :Prefecture ノード
+#   region:    地方           → (Prefecture)-[:PART_OF]->(Region)
+#   area_type: 都市部 / 地方  → (Prefecture)-[:HAS_AREA_TYPE]->(AreaType)
+#   cities:    市区町村の候補 → (City)-[:LOCATED_IN]->(Prefecture)（顧客の住所として使う）
+prefectures:
+  - name: 東京都
+    region: 関東
+    area_type: 都市部
+    cities: [渋谷区, 世田谷区, 練馬区]
+  - name: 神奈川県
+    region: 関東
+    area_type: 都市部
+    cities: [横浜市, 川崎市]
+  - name: 埼玉県
+    region: 関東
+    area_type: 都市部
+    cities: [さいたま市, 川越市]
+  - name: 大阪府
+    region: 近畿
+    area_type: 都市部
+    cities: [大阪市, 堺市]
+  - name: 愛知県
+    region: 中部
+    area_type: 都市部
+    cities: [名古屋市, 豊田市]
+  - name: 福岡県
+    region: 九州
+    area_type: 都市部
+    cities: [福岡市, 北九州市]
+  - name: 北海道
+    region: 北海道
+    area_type: 地方
+    cities: [札幌市, 旭川市]
+  - name: 宮城県
+    region: 東北
+    area_type: 地方
+    cities: [仙台市, 石巻市]
+  - name: 長野県
+    region: 中部
+    area_type: 地方
+    cities: [長野市, 松本市]
+  - name: 広島県
+    region: 中国
+    area_type: 地方
+    cities: [広島市, 尾道市]
+  - name: 沖縄県
+    region: 九州
+    area_type: 地方
+    cities: [那覇市, 名護市]
+  - name: 新潟県
+    region: 中部
+    area_type: 地方
+    cities: [新潟市, 長岡市]

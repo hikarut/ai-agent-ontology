@@ -1,6 +1,6 @@
 """SQLite の顧客データを Neo4j にオントロジー（知識グラフ）として登録するスクリプト。
 
-実行: python -m data.ontology.build_ontology   （backend/ ディレクトリで実行）
+実行: python -m data.graphdb.build_graphdb   （backend/ ディレクトリで実行）
 
 グラフの構造（ノード -[リレーション]-> ノード）:
     (Customer) -[LIVES_IN]->        (City) -[LOCATED_IN]-> (Prefecture) -[PART_OF]-> (Region)
@@ -16,7 +16,7 @@
     (Customer) -[HOLDS]->           (Value)
 """
 
-from data.common.knowledge import BRANDS, HOBBIES, PREFECTURES
+from data.ontology.knowledge import BRANDS, HOBBIES, PREFECTURES, VALUE_DESCRIPTIONS
 from services import db
 from services.ontology import driver, run
 
@@ -24,7 +24,10 @@ def build():
     """SQLite のデータから Neo4j にグラフを作る"""
     run("MATCH (n) DETACH DELETE n")  # 既存データを削除して作り直す
 
-    # 1. ドメイン知識（概念どうしの関係）を登録
+    # 1. ドメイン知識（data/ontology/ontology.yaml に定義した概念どうしの関係）を登録
+    for value, description in VALUE_DESCRIPTIONS.items():
+        run("MERGE (v:Value {name: $value}) SET v.description = $description", value=value, description=description)
+
     for pref, (region, area, _) in PREFECTURES.items():
         run("""
             MERGE (p:Prefecture {name: $pref})

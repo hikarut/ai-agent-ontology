@@ -10,7 +10,7 @@ from pathlib import Path
 
 from faker import Faker
 
-from data.common.knowledge import BRANDS, HOBBIES, PREFECTURES, SURVEY_QUESTIONS, VALUES
+from data.ontology.knowledge import BRANDS, HOBBIES, PREFECTURES, SURVEY_QUESTIONS, VALUES
 from services.db import DB_PATH
 
 SCHEMA_PATH = Path(__file__).parent / "schema.sql"  # テーブル定義

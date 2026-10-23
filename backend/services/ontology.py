@@ -1,6 +1,6 @@
 """Neo4j のオントロジー（知識グラフ）を参照する。
 
-グラフの作り方と構造は data/ontology/build_ontology.py を参照してください。
+グラフの作り方と構造は data/graphdb/build_graphdb.py を参照してください。
 """
 
 import os
